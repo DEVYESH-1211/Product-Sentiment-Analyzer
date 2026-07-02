@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import type { Review } from '../data';
+import type { Review } from '../types';
 import { Star, ThumbsUp, ThumbsDown, Minus } from 'lucide-react';
 
 interface ReviewCardProps {
@@ -23,11 +23,11 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 50, scale: 0.9, rotateX: 20 }}
       animate={{ opacity: 1, y: 0, scale: 1, rotateX: 0 }}
       transition={{ duration: 0.6, type: 'spring', bounce: 0.4 }}
-      style={{ perspective: 1000, height: '220px', cursor: 'pointer' }} 
+      style={{ perspective: 1000, height: '220px', cursor: 'pointer' }}
       onMouseEnter={() => setIsFlipped(true)}
       onMouseLeave={() => setIsFlipped(false)}
     >
@@ -59,18 +59,23 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
               <Star key={i} size={28} fill={i < review.rating ? "#facc15" : "transparent"} color="#facc15" strokeWidth={1.5} />
             ))}
           </div>
-          <div style={{ 
-            display: 'inline-flex', 
-            alignItems: 'center', 
-            gap: '0.75rem', 
-            padding: '0.4rem 1.5rem', 
-            borderRadius: '24px', 
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            padding: '0.4rem 1.5rem',
+            borderRadius: '24px',
             border: `1px solid ${getSentimentGlow()}`,
             boxShadow: `0 0 10px ${getSentimentGlow()}40`
           }}>
             {getSentimentIcon()}
             <span style={{ fontWeight: 600, color: 'white', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>{review.sentiment.charAt(0).toUpperCase() + review.sentiment.slice(1)}</span>
           </div>
+          {typeof review.confidence === 'number' && (
+            <span style={{ marginTop: '0.75rem', fontSize: '0.7rem', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', letterSpacing: '1px' }}>
+              CONFIDENCE: {Math.round(review.confidence * 100)}%
+            </span>
+          )}
         </div>
 
         {/* Back side */}
@@ -88,10 +93,16 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
           overflowY: 'auto'
         }}>
           <p style={{ fontStyle: 'italic', flex: 1, fontSize: '0.9rem', color: 'var(--text-primary)' }}>"{review.text}"</p>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-            <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>{review.reviewerName}</span>
-            <span style={{ fontFamily: 'var(--font-mono)' }}>{review.date}</span>
-          </div>
+          {(review.reviewerName || review.date) && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+              {review.reviewerName && (
+                <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>{review.reviewerName}</span>
+              )}
+              {review.date && (
+                <span style={{ fontFamily: 'var(--font-mono)' }}>{review.date}</span>
+              )}
+            </div>
+          )}
         </div>
       </motion.div>
     </motion.div>

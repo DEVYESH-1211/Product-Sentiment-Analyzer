@@ -1,12 +1,13 @@
 import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import type { Review } from '../data';
+import type { Review } from '../types';
 
 interface AnalysisPanelProps {
   reviews: Review[];
+  keywords?: { word: string; count?: number }[];
 }
 
-export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ reviews }) => {
+export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ reviews, keywords }) => {
   const sentimentData = useMemo(() => {
     const counts = { positive: 0, neutral: 0, negative: 0 };
     const snippets = { positive: '', neutral: '', negative: '' };
@@ -88,6 +89,33 @@ export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ reviews }) => {
           </div>
         </div>
       </div>
+
+      {keywords && keywords.length > 0 && (
+        <div className="cyber-card-wrapper">
+          <div className="cyber-card" style={{ padding: '1.5rem', flex: 1, border: '1px solid rgba(255,255,255,0.05)', borderRight: '2px solid #ffb300', borderTop: '2px solid #ffb300' }}>
+            <h3 style={{ marginBottom: '1rem', color: '#fff', fontSize: '1.1rem', letterSpacing: '1px' }}>Top Keywords</h3>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+              {keywords.map((k, i) => (
+                <span
+                  key={`${k.word}-${i}`}
+                  style={{
+                    padding: '0.35rem 0.85rem',
+                    borderRadius: '16px',
+                    border: '1px solid var(--accent-primary)',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.75rem',
+                    letterSpacing: '1px',
+                    textTransform: 'uppercase',
+                    color: 'var(--text-primary)'
+                  }}
+                >
+                  {k.word}{typeof k.count === 'number' ? ` (${k.count})` : ''}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

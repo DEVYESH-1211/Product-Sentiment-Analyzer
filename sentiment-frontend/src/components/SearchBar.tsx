@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Smartphone, Headphones } from 'lucide-react';
-import { mockProducts } from '../data';
+import { Search } from 'lucide-react';
 
 interface SearchBarProps {
-  onSelectProduct: (productId: string) => void;
+  onSearch: (productName: string) => void;
+  loading?: boolean;
 }
 
 const placeholders = ["Search Samsung Galaxy S25...", "Search iPhone 16 Pro...", "Search Sony WH-1000XM6..."];
 
-export const SearchBar: React.FC<SearchBarProps> = ({ onSelectProduct }) => {
+export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, loading }) => {
   const [query, setQuery] = useState('');
   const [placeholderIdx, setPlaceholderIdx] = useState(0);
   const [isFocused, setIsFocused] = useState(false);
@@ -21,24 +21,40 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSelectProduct }) => {
     return () => clearInterval(interval);
   }, []);
 
-  const filteredProducts = mockProducts.filter(p => p.name.toLowerCase().includes(query.toLowerCase()));
+  const submitSearch = () => {
+    const trimmed = query.trim();
+    if (!trimmed || loading) return;
+    onSearch(trimmed);
+    setIsFocused(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      submitSearch();
+    }
+  };
 
   return (
     <div className="search-container" style={{ position: 'relative', zIndex: 50 }}>
       <div className="cyber-card-wrapper" style={{ display: 'block' }}>
-        <div 
-          className={`cyber-card`}
-          style={{ 
-            display: 'flex', 
+        <div
+          className="cyber-card"
+          style={{
+            display: 'flex',
             flexDirection: 'row',
-            alignItems: 'center', 
-            padding: '1.25rem 1.5rem', 
+            alignItems: 'center',
+            padding: '1.25rem 1.5rem',
             transition: 'all 0.3s ease',
             boxShadow: isFocused ? '0 0 20px var(--accent-primary)' : 'none',
-            border: isFocused ? '1px solid var(--accent-primary)' : '1px solid transparent'
+            border: isFocused ? '1px solid var(--accent-primary)' : '1px solid transparent',
+            opacity: loading ? 0.7 : 1
           }}
         >
-          <Search size={24} style={{ marginRight: '1rem', color: 'var(--accent-primary)' }} />
+          <Search
+            size={24}
+            style={{ marginRight: '1rem', color: 'var(--accent-primary)', cursor: loading ? 'default' : 'pointer' }}
+            onClick={submitSearch}
+          />
           <div style={{ position: 'relative', flex: 1, height: '24px' }}>
             <AnimatePresence mode="wait">
               {!query && (
@@ -54,17 +70,19 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSelectProduct }) => {
                 </motion.div>
               )}
             </AnimatePresence>
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={query}
+              disabled={loading}
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => setIsFocused(true)}
-              onBlur={() => setTimeout(() => setIsFocused(false), 200)} 
-              style={{ 
-                width: '100%', 
-                background: 'transparent', 
-                border: 'none', 
-                outline: 'none', 
+              onBlur={() => setTimeout(() => setIsFocused(false), 200)}
+              onKeyDown={handleKeyDown}
+              style={{
+                width: '100%',
+                background: 'transparent',
+                border: 'none',
+                outline: 'none',
                 color: 'var(--text-primary)',
                 fontFamily: 'var(--font-mono)',
                 textTransform: 'uppercase',
@@ -80,34 +98,24 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSelectProduct }) => {
       </div>
 
       <AnimatePresence>
-        {isFocused && query && (
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
+        {isFocused && query && !loading && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="cyber-card-wrapper"
-            style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '1rem' }}
+            exit={{ opacity: 0, y: -6 }}
+            style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              marginTop: '0.5rem',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.7rem',
+              color: 'var(--text-secondary)',
+              letterSpacing: '1px',
+              textTransform: 'uppercase'
+            }}
           >
-            <div className="cyber-card" style={{ maxHeight: '300px', overflowY: 'auto', padding: '0.5rem' }}>
-              {filteredProducts.length > 0 ? filteredProducts.map(p => (
-                <div 
-                  key={p.id} 
-                  onClick={() => {
-                    onSelectProduct(p.id);
-                    setQuery(p.name);
-                    setIsFocused(false);
-                  }}
-                  style={{ display: 'flex', alignItems: 'center', padding: '1rem', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background-color 0.2s ease', fontFamily: 'var(--font-heading)' }}
-                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(0, 229, 255, 0.1)'; e.currentTarget.style.textShadow = '0 0 8px var(--accent-primary)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.textShadow = 'none'; }}
-                >
-                  {p.name.includes('Sony') ? <Headphones size={20} style={{ marginRight: '1rem', color: 'var(--accent-secondary)' }} /> : <Smartphone size={20} style={{ marginRight: '1rem', color: 'var(--accent-secondary)' }} />}
-                  <span style={{ fontWeight: 500, letterSpacing: '1px' }}>{p.name}</span>
-                </div>
-              )) : (
-                <div style={{ padding: '1.5rem', color: 'var(--accent-secondary)', textAlign: 'center', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>[ NO DATA FOUND ]</div>
-              )}
-            </div>
+            [ press enter or click the search icon ]
           </motion.div>
         )}
       </AnimatePresence>
