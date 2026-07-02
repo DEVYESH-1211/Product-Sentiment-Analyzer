@@ -1,0 +1,252 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+
+:root {
+  /* Ultra Premium Gamer Dark Theme */
+  --bg-base: #050508;
+  --bg-surface: #0a0a0f;
+  --bg-card: rgba(12, 12, 18, 0.75);
+  --text-primary: #f0f4f8;
+  --text-secondary: #8b9bb4;
+  
+  --accent-primary: #00e5ff; /* Cyan */
+  --accent-secondary: #ff0055; /* Hot Pink */
+  --accent-tertiary: #fce205; /* Cyber Yellow */
+  
+  --glow-positive: #39ff14; /* Lime */
+  --glow-neutral: #ffb300; /* Amber */
+  --glow-negative: #ff0055; /* Hot Pink */
+  
+  --border-color: rgba(0, 229, 255, 0.25);
+  
+  --font-heading: 'Orbitron', sans-serif;
+  --font-body: 'Rajdhani', sans-serif;
+  --font-mono: 'Share Tech Mono', monospace;
+}
+
+[data-theme='light'] {
+  /* High-tech Clean Light Theme */
+  --bg-base: #f4f6f8;
+  --bg-surface: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  
+  --accent-primary: #2563eb; 
+  --accent-secondary: #db2777;
+  --accent-tertiary: #d97706;
+  
+  --glow-positive: #10b981;
+  --glow-neutral: #f59e0b;
+  --glow-negative: #ef4444;
+  
+  --border-color: rgba(37, 99, 235, 0.2);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* 2D Grid Background with Crosshairs */
+.bg-grid {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -2;
+  background-color: #050508;
+  background-image: 
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+.bg-grid::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: radial-gradient(circle at 25px 25px, rgba(255,255,255,0.1) 2px, transparent 2px);
+  background-size: 50px 50px;
+}
+
+.bg-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(circle at center, transparent 0%, rgba(5,5,8,0.8) 100%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Ambient Moving Glows */
+.ambient-glow {
+  position: fixed;
+  width: 80vw;
+  height: 80vw;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 229, 255, 0.05) 0%, transparent 50%);
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulseGlow 8s infinite alternate ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes pulseGlow {
+  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; filter: hue-rotate(0deg); }
+  100% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; filter: hue-rotate(30deg); }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* High-End Cyber Card */
+.cyber-card-wrapper {
+  position: relative;
+  transition: transform 0.2s ease;
+  height: 100%;
+}
+
+.cyber-card-wrapper:hover {
+  transform: translateY(-2px);
+  z-index: 10;
+}
+
+.cyber-card {
+  position: relative;
+  background: rgba(12, 16, 24, 0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  /* Angled corners: top-left and bottom-right */
+  clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+  padding: 1.5rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Decorator UI Elements on cards */
+.cyber-card::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 4px;
+  background: repeating-linear-gradient(90deg, var(--accent-primary) 0, var(--accent-primary) 4px, transparent 4px, transparent 8px);
+  opacity: 0.5;
+}
+
+/* Glitch Text Effect */
+.glitch-text {
+  position: relative;
+  display: inline-block;
+  color: var(--text-primary);
+  text-shadow: 0 0 15px var(--accent-primary);
+}
+.glitch-text::before, .glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  opacity: 0.8;
+}
+.glitch-text::before {
+  left: 2px;
+  text-shadow: -2px 0 var(--accent-secondary);
+  clip: rect(24px, 550px, 90px, 0);
+  animation: glitch-anim-2 3s infinite linear alternate-reverse;
+}
+.glitch-text::after {
+  left: -2px;
+  text-shadow: -2px 0 var(--accent-primary);
+  clip: rect(85px, 550px, 140px, 0);
+  animation: glitch-anim 2.5s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim {
+  0% { clip: rect(10px, 9999px, 44px, 0); }
+  20% { clip: rect(65px, 9999px, 90px, 0); }
+  40% { clip: rect(12px, 9999px, 50px, 0); }
+  60% { clip: rect(80px, 9999px, 20px, 0); }
+  80% { clip: rect(33px, 9999px, 70px, 0); }
+  100% { clip: rect(50px, 9999px, 10px, 0); }
+}
+@keyframes glitch-anim-2 {
+  0% { clip: rect(65px, 9999px, 100px, 0); }
+  20% { clip: rect(10px, 9999px, 30px, 0); }
+  40% { clip: rect(80px, 9999px, 90px, 0); }
+  60% { clip: rect(20px, 9999px, 60px, 0); }
+  80% { clip: rect(90px, 9999px, 40px, 0); }
+  100% { clip: rect(30px, 9999px, 80px, 0); }
+}
+
+/* High-tech Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: var(--accent-primary); border-radius: 0; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-secondary); }
+
+/* Animated Scanlines */
+.scanlines {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0),
+    rgba(255,255,255,0) 50%,
+    rgba(0,0,0,0.1) 50%,
+    rgba(0,0,0,0.1)
+  );
+  background-size: 100% 4px;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.3;
+  animation: scanlineScroll 10s linear infinite;
+}
+
+@keyframes scanlineScroll {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 100vh; }
+}
+
+/* Holographic Sheen on Hover */
+.cyber-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%);
+  transform: skewX(-20deg);
+  transition: all 0.5s ease;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.cyber-card-wrapper:hover .cyber-card::before,
+.cyber-card:hover::before {
+  animation: sweepSheen 0.8s ease-out forwards;
+}
+
+@keyframes sweepSheen {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
