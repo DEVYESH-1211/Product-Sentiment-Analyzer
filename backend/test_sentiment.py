@@ -6,7 +6,6 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import sentiment
-
 class TestSentimentModule(unittest.TestCase):
     def setUp(self):
         # Sample reviews based on schemas in the project documents
