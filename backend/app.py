@@ -34,6 +34,7 @@ from sentiment import analyze_reviews
 from database import (
     save_reviews,
     get_reviews,
+    product_exists,
 )
 
 from analytics import (
@@ -143,17 +144,17 @@ def validate_product_name(
             400
         )
 
-    if "product_name" not in payload:
+    if "product" not in payload:
         return error_response(
-            "Missing product_name field.",
+            "Missing product field.",
             400
         )
 
-    product = payload.get("product_name")
+    product = payload.get("product")
 
     if not isinstance(product, str):
         return error_response(
-            "product_name must be a string.",
+            "product must be a string.",
             400
         )
 
@@ -202,30 +203,6 @@ def health():
 
 @app.route("/search", methods=["POST"])
 def search_product():
-    """
-    POST /search
-
-    Workflow
-
-        Receive Product Name
-
-                ↓
-
-        scrape_product()
-
-                ↓
-
-        analyze_reviews()
-
-                ↓
-
-        save_reviews()
-
-                ↓
-
-        Return JSON Response
-    """
-
     try:
 
         ###############################################################
@@ -241,69 +218,48 @@ def search_product():
         if validation:
             return validation
 
-        product_name = payload["product_name"].strip()
+        product_name = payload["product"].strip()
+        if product_exists(product_name):
 
-        ###############################################################
-        # Step 1
-        # Scrape Reviews
-        ###############################################################
+            reviews = get_reviews(product_name)
 
-        reviews = scrape_product(product_name)
+        else:
 
-        if reviews is None:
+            reviews = scrape_product(product_name)
 
-            return error_response(
-                "Scraper returned no data.",
-                500
-            )
+            if reviews is None:
+                return error_response(
+                    "Scraper returned no data.",
+                    500
+                )
 
-        if len(reviews) == 0:
+            if len(reviews) == 0:
+                return error_response(
+                    "No reviews found for the given product.",
+                    404
+                )
 
-            return error_response(
-                "No reviews found for the given product.",
-                404
-            )
+            reviews = analyze_reviews(reviews)
 
-        ###############################################################
-        # Step 2
-        # Sentiment Analysis
-        ###############################################################
+            if reviews is None:
+                return error_response(
+                    "Sentiment analysis failed.",
+                    500
+                )
 
-        processed_reviews = analyze_reviews(
-            reviews
-        )
+            if not save_reviews(reviews):
+                return error_response(
+                    "Unable to save reviews.",
+                    500
+                )
 
-        if processed_reviews is None:
+            reviews = get_reviews(product_name)
 
-            return error_response(
-                "Sentiment analysis failed.",
-                500
-            )
-
-        ###############################################################
-        # Step 3
-        # Save Reviews
-        ###############################################################
-
-        saved = save_reviews(
-            processed_reviews
-        )
-
-        if not saved:
-
-            return error_response(
-                "Unable to save reviews.",
-                500
-            )
-
-        ###############################################################
-        # Success Response
-        ###############################################################
 
         response = {
             "product": product_name,
-            "count": len(processed_reviews),
-            "data": processed_reviews
+            "count": len(reviews),
+            "data": reviews
         }
 
         return success_response(

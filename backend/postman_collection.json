@@ -1,0 +1,153 @@
+{
+    "info": {
+      "name": "Product Sentiment Analyzer - Backend",
+      "description": "Collection covering success and error test cases for all backend endpoints.",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+      { "key": "base_url", "value": "http://localhost:5000" }
+    ],
+    "item": [
+      {
+        "name": "Health Check",
+        "item": [
+          {
+            "name": "Success - Get health status",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": { "raw": "{{base_url}}/health", "host": ["{{base_url}}"], "path": ["health"] }
+            }
+          }
+        ]
+      },
+      {
+        "name": "Search Product",
+        "item": [
+          {
+            "name": "Success - Valid product name",
+            "request": {
+              "method": "POST",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": { "mode": "raw", "raw": "{\n  \"product_name\": \"iPhone 15\"\n}" },
+              "url": { "raw": "{{base_url}}/search", "host": ["{{base_url}}"], "path": ["search"] }
+            }
+          },
+          {
+            "name": "Error - Missing JSON body",
+            "request": {
+              "method": "POST",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": { "mode": "raw", "raw": "" },
+              "url": { "raw": "{{base_url}}/search", "host": ["{{base_url}}"], "path": ["search"] }
+            }
+          },
+          {
+            "name": "Error - Empty product_name",
+            "request": {
+              "method": "POST",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": { "mode": "raw", "raw": "{\n  \"product_name\": \"\"\n}" },
+              "url": { "raw": "{{base_url}}/search", "host": ["{{base_url}}"], "path": ["search"] }
+            }
+          },
+          {
+            "name": "Error - Missing product_name field",
+            "request": {
+              "method": "POST",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": { "mode": "raw", "raw": "{}" },
+              "url": { "raw": "{{base_url}}/search", "host": ["{{base_url}}"], "path": ["search"] }
+            }
+          }
+        ]
+      },
+      {
+        "name": "Get Reviews",
+        "item": [
+          {
+            "name": "Success - Existing product",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": { "raw": "{{base_url}}/reviews/iPhone 15", "host": ["{{base_url}}"], "path": ["reviews", "iPhone 15"] }
+            }
+          },
+          {
+            "name": "Error - Product not found",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": { "raw": "{{base_url}}/reviews/NonexistentProductXYZ", "host": ["{{base_url}}"], "path": ["reviews", "NonexistentProductXYZ"] }
+            }
+          },
+          {
+            "name": "Error - Empty product name",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": { "raw": "{{base_url}}/reviews/", "host": ["{{base_url}}"], "path": ["reviews", ""] }
+            }
+          }
+        ]
+      },
+      {
+        "name": "Get Summary",
+        "item": [
+          {
+            "name": "Success - Existing product",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": { "raw": "{{base_url}}/summary/iPhone 15", "host": ["{{base_url}}"], "path": ["summary", "iPhone 15"] }
+            }
+          },
+          {
+            "name": "Error - Product not found",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": { "raw": "{{base_url}}/summary/NonexistentProductXYZ", "host": ["{{base_url}}"], "path": ["summary", "NonexistentProductXYZ"] }
+            }
+          },
+          {
+            "name": "Error - Empty product name",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": { "raw": "{{base_url}}/summary/", "host": ["{{base_url}}"], "path": ["summary", ""] }
+            }
+          }
+        ]
+      },
+      {
+        "name": "Get Keywords",
+        "item": [
+          {
+            "name": "Success - Existing product",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": { "raw": "{{base_url}}/keywords/iPhone 15", "host": ["{{base_url}}"], "path": ["keywords", "iPhone 15"] }
+            }
+          },
+          {
+            "name": "Error - Product not found",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": { "raw": "{{base_url}}/keywords/NonexistentProductXYZ", "host": ["{{base_url}}"], "path": ["keywords", "NonexistentProductXYZ"] }
+            }
+          },
+          {
+            "name": "Error - Empty product name",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": { "raw": "{{base_url}}/keywords/", "host": ["{{base_url}}"], "path": ["keywords", ""] }
+            }
+          }
+        ]
+      }
+    ]
+  }
