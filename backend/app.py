@@ -59,30 +59,6 @@ CORS(app)
 ##########################################################################
 
 
-def success_response(
-    data: Any,
-    status_code: int = 200
-):
-    """
-    Standard successful response.
-
-    Returns
-    -------
-    {
-        success: true,
-        data: ...
-    }
-    """
-
-    return (
-        jsonify(
-            {
-                "success": True,
-                "data": data
-            }
-        ),
-        status_code
-    )
 
 
 def error_response(
@@ -256,16 +232,11 @@ def search_product():
             reviews = get_reviews(product_name)
 
 
-        response = {
-            "product": product_name,
-            "count": len(reviews),
-            "data": reviews
-        }
+        response =  reviews
 
-        return success_response(
-            response,
-            200
-        )
+        return jsonify(
+            response
+        ), 200
 
     except Exception as exception:
 
@@ -319,13 +290,9 @@ def reviews(product_name: str):
                 404
             )
 
-        response = {
-            "product": product_name,
-            "count": len(reviews),
-            "data": reviews
-        }
+        response = reviews
 
-        return success_response(response)
+        return jsonify(response)
 
     except Exception as exception:
 
@@ -385,12 +352,9 @@ def summary(product_name: str):
 
         summary_data = get_summary(reviews)
 
-        response = {
-            "product": product_name,
-            "summary": summary_data
-        }
+        response = summary_data
 
-        return success_response(response)
+        return jsonify(response)
 
     except Exception as exception:
 
@@ -450,12 +414,9 @@ def keywords(product_name: str):
 
         keywords_data = get_keywords(reviews)
 
-        response = {
-            "product": product_name,
-            "keywords": keywords_data
-        }
+        response = keywords_data
 
-        return success_response(response)
+        return jsonify(response)
 
     except Exception as exception:
 
