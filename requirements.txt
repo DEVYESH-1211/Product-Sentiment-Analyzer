@@ -1,0 +1,41 @@
+# =============================================================================
+# requirements.txt
+# Product Sentiment Analyzer - Backend Dependencies
+# =============================================================================
+
+# --- Core Web Framework ---
+Flask==3.0.3
+Flask-Cors==4.0.1
+Werkzeug==3.0.3
+
+# --- Environment / Configuration ---
+python-dotenv==1.0.1
+
+# --- Database (MongoDB) ---
+pymongo==4.7.2
+dnspython==2.6.1
+
+# --- Web Scraping ---
+selenium==4.21.0
+webdriver-manager==4.0.1
+beautifulsoup4==4.12.3
+lxml==5.2.2
+requests==2.32.3
+
+# --- NLP / Sentiment Analysis ---
+nltk==3.8.1
+vaderSentiment==3.3.2
+textblob==0.18.0.post0
+scikit-learn==1.5.0
+spacy==3.7.5
+
+# --- Data Handling ---
+numpy==1.26.4
+pandas==2.2.2
+
+# --- Production Server ---
+gunicorn==22.0.0
+
+# --- Utilities ---
+python-dateutil==2.9.0.post0
+validators==0.28.3

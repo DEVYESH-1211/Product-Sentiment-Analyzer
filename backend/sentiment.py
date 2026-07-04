@@ -1,5 +1,10 @@
 import re
+import logging
+from typing import List, Dict
+
 import nltk
+
+logger = logging.getLogger(__name__)
 
 try:
     from nltk.sentiment.vader import SentimentIntensityAnalyzer
@@ -49,7 +54,7 @@ class FallbackSentimentAnalyzer:
         if not words:
             return {'pos': 0.0, 'neg': 0.0, 'neu': 1.0, 'compound': 0.0}
             
-        negations = {'not', 'no', 'never', 'neither', 'nor', 'dont', "don't", 'cant', "can't", 'wasnt', "wasn't"}
+        negations = {'not', 'no', 'never', 'neither', 'nor', 'dont', "don't", 'cant', "can't", 'wasnt', "wasn't, isn't, aren't, won't, shouldn't, couldn't, didn't, doesn't"}
         pos_count = 0
         neg_count = 0
         
@@ -106,19 +111,22 @@ def _init_analyzer():
         
     if SentimentIntensityAnalyzer is not None:
         try:
-            # Check if vader_lexicon is already downloaded
+            # Check if vader_lexicon is already available. We deliberately do NOT
+            # call nltk.download() here: downloading dependencies at runtime is
+            # unreliable in production/deployed environments (no network access,
+            # read-only filesystem, etc.). The lexicon should be installed ahead
+            # of time as part of the build/deploy process.
             nltk.data.find('sentiment/vader_lexicon.zip')
-        except LookupError:
-            try:
-                # Try downloading quietly
-                nltk.download('vader_lexicon', quiet=True)
-            except Exception:
-                pass
-                
-        try:
             _sia = SentimentIntensityAnalyzer()
+        except LookupError:
+            logger.warning(
+                "NLTK vader_lexicon not found. Run `python -m nltk.downloader "
+                "vader_lexicon` as part of your build step. Falling back to the "
+                "built-in lexicon-based analyzer for now."
+            )
+            _sia = FallbackSentimentAnalyzer()
         except Exception:
-            # Fall back to custom lexicon if download failed or NLTK failed to initialize
+            logger.exception("Failed to initialize VADER; using fallback analyzer.")
             _sia = FallbackSentimentAnalyzer()
     else:
         # Fall back to custom lexicon if nltk vader is not importable
@@ -144,7 +152,7 @@ def clean_text(text: str) -> str:
     return text.strip()
 
 
-def preprocess_reviews(reviews: list) -> list:
+def preprocess_reviews(reviews: List[Dict]) -> List[Dict]:
     """
     Clean review text.
     
@@ -166,39 +174,30 @@ def preprocess_reviews(reviews: list) -> list:
     return cleaned_reviews
 
 
-def analyze_reviews(reviews: list) -> list:
+def analyze_reviews(reviews: List[Dict]) -> List[Dict]:
     """
     Predict sentiment for every review.
-    
-    Accepts a list of review dictionaries, analyzes their "review" text,
-    and returns the list with "sentiment" and "confidence" keys added.
-    
+
+    Accepts a list of review dictionaries, cleans and analyzes their "review"
+    text, and returns the list with "sentiment" and "confidence" keys added.
+    Cleaning (HTML/emoji stripping, whitespace normalization) is performed
+    internally via preprocess_reviews(), so callers only need to call this
+    one function.
+
     Sentiment labels: "Positive", "Neutral", "Negative"
     Confidence score: Float (0.0 to 1.0)
     """
     if not isinstance(reviews, list):
         return []
-        
+
     _init_analyzer()
-    
+
+    cleaned_reviews = preprocess_reviews(reviews)
+
     analyzed_reviews = []
-    for item in reviews:
-        if not isinstance(item, dict):
-            continue
-        cleaned_item = item.copy()
+    for cleaned_item in cleaned_reviews:
         text = cleaned_item.get("review", "")
-        
-        # Exact overrides for project specification examples to match demo expectations
-        DEMO_OVERRIDES = {
-            "Excellent battery life and smooth performance.": {"sentiment": "Positive", "confidence": 0.97},
-            "Excellent battery life.": {"sentiment": "Positive", "confidence": 0.98}
-        }
-        if text in DEMO_OVERRIDES:
-            cleaned_item["sentiment"] = DEMO_OVERRIDES[text]["sentiment"]
-            cleaned_item["confidence"] = DEMO_OVERRIDES[text]["confidence"]
-            analyzed_reviews.append(cleaned_item)
-            continue
-            
+
         # Default behavior for empty or blank review text
         if not text.strip():
             cleaned_item["sentiment"] = "Neutral"
