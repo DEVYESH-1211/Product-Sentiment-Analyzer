@@ -34,10 +34,15 @@ def scrape_product(product_name: str) -> list:
     chrome_options = uc.ChromeOptions()
     chrome_options.headless = True
     chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--window-size=1920,1080")
+    chrome_options.add_argument("--disable-extensions")
+
     
     try:
         # Use undetected_chromedriver and specify version 149 to match system Chrome
-        driver = uc.Chrome(options=chrome_options, version_main=149)
+        driver = uc.Chrome(options=chrome_options)
     except Exception as e:
         print(f"Error initializing Chrome driver: {e}")
         return reviews_data

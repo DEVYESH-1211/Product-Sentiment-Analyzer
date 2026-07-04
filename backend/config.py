@@ -1,8 +1,9 @@
 import os
 from datetime import timedelta
 from dotenv import load_dotenv
-load_dotenv()
+from pathlib import Path
 
+load_dotenv(Path(__file__).parent / ".env")
 # ---------------------------------------------------------------------------
 # Server Configuration
 # ---------------------------------------------------------------------------
@@ -27,6 +28,12 @@ MONGO_DB_NAME = os.environ.get("MONGO_DB_NAME")
 
 # Collection names (kept centralized so they're easy to rename later)
 MONGO_COLLECTION_REVIEWS = os.environ.get("MONGO_COLLECTION_REVIEWS", "reviews")
+
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY is required")
+
+if not MONGO_URI:
+    raise RuntimeError("MONGO_URI is required")
 
 # ---------------------------------------------------------------------------
 # CORS Configuration
