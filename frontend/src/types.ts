@@ -9,8 +9,9 @@ export interface Review {
   sentiment: Sentiment;
   text: string;
   snippet: string;
-  reviewerName?: string; // not sent by the backend today — optional so UI can omit it
-  date?: string;         // not sent by the backend today — optional so UI can omit it
+  reviewerName?: string; // sent by the backend as "reviewer"
+  date?: string;         // sent by the backend as "date"
+  source?: string;       // sent by the backend as "source", e.g. "Flipkart"
   confidence?: number;   // sent by the backend (0-1) — optional in case it's ever missing
 }
 

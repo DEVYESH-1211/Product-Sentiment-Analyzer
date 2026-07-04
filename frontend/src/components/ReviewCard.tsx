@@ -93,13 +93,25 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
           overflowY: 'auto'
         }}>
           <p style={{ fontStyle: 'italic', flex: 1, fontSize: '0.9rem', color: 'var(--text-primary)' }}>"{review.text}"</p>
-          {(review.reviewerName || review.date) && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+          {(review.reviewerName || review.date || review.source) && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
               {review.reviewerName && (
-                <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>{review.reviewerName}</span>
+                <span>
+                  <span style={{ color: 'var(--text-secondary)', letterSpacing: '1px' }}>Reviewer: </span>
+                  <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>{review.reviewerName}</span>
+                </span>
+              )}
+              {review.source && (
+                <span>
+                  <span style={{ color: 'var(--text-secondary)', letterSpacing: '1px' }}>Source: </span>
+                  <span style={{ fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1px' }}>{review.source}</span>
+                </span>
               )}
               {review.date && (
-                <span style={{ fontFamily: 'var(--font-mono)' }}>{review.date}</span>
+                <span>
+                  <span style={{ color: 'var(--text-secondary)', letterSpacing: '1px' }}>Date: </span>
+                  <span style={{ fontFamily: 'var(--font-mono)' }}>{review.date}</span>
+                </span>
               )}
             </div>
           )}

@@ -15,6 +15,9 @@ export interface ApiReview {
   rating: number;
   sentiment: string; // e.g. "Positive" | "Neutral" | "Negative"
   confidence?: number;
+  date?: string;      // e.g. "2026-07-04"
+  reviewer?: string;  // e.g. "Kesab Pradhan"
+  source?: string;    // e.g. "Flipkart"
 }
 
 export interface ApiSummary {
@@ -32,7 +35,7 @@ export interface ApiSummary {
 export type ApiKeyword =
   | string
   | {
-      word: string;
+      keyword: string;
       count?: number;
     };
 
@@ -45,12 +48,10 @@ function normalizeSentiment(raw: string | undefined): Sentiment {
 }
 
 /**
- * Converts one raw backend review (`{ review, rating, sentiment, confidence }`)
- * into the normalized `Review` shape every component expects
- * (`{ text, rating, sentiment, snippet, ... }`).
- *
- * Fields the backend doesn't send (reviewerName, date) are simply left
- * undefined — ReviewCard renders around their absence rather than crashing.
+ * Converts one raw backend review (`{ review, rating, sentiment, confidence,
+ * date, reviewer, source }`) into the normalized `Review` shape every
+ * component expects (`{ text, rating, sentiment, snippet, reviewerName,
+ * date, source, ... }`).
  */
 export function mapApiReviewToReview(apiReview: ApiReview, index: number): Review {
   const text = apiReview.review ?? '';
@@ -61,9 +62,19 @@ export function mapApiReviewToReview(apiReview: ApiReview, index: number): Revie
     text,
     snippet: text.length > 90 ? `${text.slice(0, 90)}…` : text,
     confidence: apiReview.confidence,
+    reviewerName: apiReview.reviewer,
+    date: apiReview.date,
+    source: apiReview.source,
   };
 }
 
+/**
+ * The backend sends `{ keyword, count }`. Internally the app renders
+ * `{ word, count }`, so the field is renamed here — this is the one place
+ * that translation happens.
+ */
 export function normalizeKeyword(keyword: ApiKeyword): { word: string; count?: number } {
-  return typeof keyword === 'string' ? { word: keyword } : keyword;
+  return typeof keyword === 'string'
+    ? { word: keyword }
+    : { word: keyword.keyword, count: keyword.count };
 }
