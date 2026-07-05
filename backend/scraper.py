@@ -1,4 +1,5 @@
 import time
+import os
 import undetected_chromedriver as uc
 
 # Suppress the harmless WinError 6 cleanup exception
@@ -32,7 +33,7 @@ def scrape_product(product_name: str) -> list:
     
     # Configure Undetected Chromedriver options
     chrome_options = uc.ChromeOptions()
-    chrome_options.headless = True
+    chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--disable-gpu")
@@ -42,7 +43,7 @@ def scrape_product(product_name: str) -> list:
     
     try:
         # Use undetected_chromedriver and specify version 149 to match system Chrome
-        driver = uc.Chrome(options=chrome_options)
+        driver = uc.Chrome(options=chrome_options, browser_executable_path=os.environ.get("CHROME_BIN"), use_subprocess=False)
     except Exception as e:
         print(f"Error initializing Chrome driver: {e}")
         return reviews_data
