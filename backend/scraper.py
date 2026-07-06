@@ -1,5 +1,8 @@
+import re
 import time
 import os
+import shutil
+import subprocess
 import undetected_chromedriver as uc
 
 # Suppress the harmless WinError 6 cleanup exception
@@ -19,6 +22,64 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+
+def _find_chrome_binary():
+    """Locate the Chrome/Chromium executable across platforms.
+
+    Priority: CHROME_BIN env var -> common binary names on PATH ->
+    well-known install locations on macOS/Windows.
+    """
+    env_path = os.environ.get("CHROME_BIN")
+    if env_path and os.path.exists(env_path):
+        return env_path
+
+    # Common executable names that might be on PATH (Linux/CI containers)
+    for name in (
+        "google-chrome",
+        "google-chrome-stable",
+        "chromium",
+        "chromium-browser",
+    ):
+        found = shutil.which(name)
+        if found:
+            return found
+
+    # Well-known install locations (macOS / Windows)
+    candidates = [
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+    ]
+    for path in candidates:
+        if os.path.exists(path):
+            return path
+
+    return None
+
+
+def _get_chrome_major_version(chrome_path):
+    """Return the installed Chrome's major version number (int), or None
+    if it can't be determined. Works whether `chrome --version` prints to
+    stdout (Linux/Windows) or stderr (some macOS setups).
+    """
+    if not chrome_path:
+        return None
+    try:
+        result = subprocess.run(
+            [chrome_path, "--version"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        output = result.stdout.strip() or result.stderr.strip()
+        match = re.search(r"(\d+)\.\d+\.\d+\.\d+", output)
+        if match:
+            return int(match.group(1))
+    except Exception:
+        pass
+    return None
+
+
 def scrape_product(product_name: str) -> list:
     """
     Scrapes product reviews from Flipkart using Undetected Chromedriver.
@@ -31,25 +92,44 @@ def scrape_product(product_name: str) -> list:
     """
     reviews_data = []
     
-    # Configure Undetected Chromedriver options
-    chrome_options = uc.ChromeOptions()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument("--disable-extensions")
-    chrome_options.add_argument("--disable-setuid-sandbox")
-    chrome_options.add_argument("--disable-software-rasterizer")
-    chrome_options.add_argument("--remote-debugging-port=9222")
-    chrome_options.add_argument("--window-size=1920,1080")
+    # Locate Chrome and detect its major version so undetected_chromedriver
+    # downloads a matching ChromeDriver build instead of guessing (which is
+    # what was causing "ChromeDriver only supports Chrome version X" errors).
+    chrome_binary = _find_chrome_binary()
+    chrome_major_version = _get_chrome_major_version(chrome_binary)
 
-    
+    def _build_options():
+        opts = uc.ChromeOptions()
+        opts.add_argument("--headless=new")
+        opts.add_argument("--no-sandbox")
+        opts.add_argument("--disable-dev-shm-usage")
+        opts.add_argument("--disable-gpu")
+        opts.add_argument("--disable-extensions")
+        opts.add_argument("--disable-setuid-sandbox")
+        opts.add_argument("--disable-software-rasterizer")
+        opts.add_argument("--window-size=1920,1080")
+        return opts
+
+    driver = None
     try:
-        # Use undetected_chromedriver and specify version 149 to match system Chrome
-        driver = uc.Chrome(options=chrome_options, browser_executable_path=os.environ.get("CHROME_BIN"), use_subprocess=False)
+        driver = uc.Chrome(
+            options=_build_options(),
+            browser_executable_path=chrome_binary,
+            version_main=chrome_major_version,
+            use_subprocess=False,
+        )
     except Exception as e:
-        print(f"Error initializing Chrome driver: {e}")
-        return reviews_data
+        print(f"Error initializing Chrome driver (version_main={chrome_major_version}): {e}")
+        # Fallback: let undetected_chromedriver auto-detect everything itself,
+        # in case our manual detection picked the wrong binary/version.
+        try:
+            driver = uc.Chrome(
+                options=_build_options(),
+                use_subprocess=False,
+            )
+        except Exception as e2:
+            print(f"Fallback Chrome driver initialization also failed: {e2}")
+            return reviews_data
         
     try:
         # 1. Search for the product on Flipkart (sorted by popularity to avoid 0-review sponsored items)
