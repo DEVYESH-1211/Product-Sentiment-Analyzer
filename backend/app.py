@@ -55,7 +55,7 @@ app.config.from_object(config)
 
 # Enable CORS
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
-CORS(app, origins=["FRONTEND_URL"])
+CORS(app, origins=["FRONTEND_URL", re.compile(r"https://product-sentiment-analyzer-.*\.vercel\.app"),])
 
 ##########################################################################
 # Helper Functions
