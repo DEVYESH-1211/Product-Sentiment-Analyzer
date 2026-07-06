@@ -28,6 +28,8 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 import config
+import re
+import os
 
 from scraper import scrape_product
 from sentiment import analyze_reviews
@@ -52,7 +54,8 @@ app = Flask(__name__)
 app.config.from_object(config)
 
 # Enable CORS
-CORS(app)
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+CORS(app, origins=["FRONTEND_URL"])
 
 ##########################################################################
 # Helper Functions
